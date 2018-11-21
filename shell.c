@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-
 // char **parse_args(char *line) {
 //     char **args = calloc(sizeof(char *), 6);
 //     int index = 0;
@@ -15,35 +14,6 @@
 //         args[index] = strsep(&line, " ");
 //         index++;
 //     } return args;
-// }
-//
-// void execute(char **argv) {
-//     int pid;
-//     int status;
-//
-//     if ((pid = fork()) < 0) {     /* fork a child process           */
-//         printf("*** ERROR: forking child process failed\n");
-//         exit(1);
-//     } else if (pid == 0) {          /* for the child process:         */
-//         if (execvp(*argv, argv) < 0) {     /* execute the command  */
-//             // printf("*** ERROR: exec failed\n");
-//             exit(1);
-//         }
-//     } else {                                  /* for the parent:      */
-//         while (wait(&status) != pid)
-//         ;       /* wait for completion  */
-//     }
-// }
-//
-// int main() {
-//     while (1) {
-//         char path[500];
-//         char ** args = calloc(sizeof(char), 100);
-//         printf("\n> ");
-//         scanf("%s", path);
-//         args = parse_args(path);
-//         execute(args);
-//     } return 0;
 // }
 
 void  parse(char *line, char **argv)
