@@ -16,7 +16,7 @@ char **parse_args(char *line) {
     } return args;
 }
 
-void  parse(char *line, char **argv) {
+void parse(char *line, char **argv) {
     while (*line != '\0') {       /* if not the end of line ....... */
         while (*line == ' ' || *line == '\t' || *line == '\n')
         *line++ = '\0';     /* replace white spaces with 0    */
@@ -28,7 +28,7 @@ void  parse(char *line, char **argv) {
     *argv = '\0';                 /* mark the end of argument list  */
 }
 
-void  execute(char **argv) {
+void execute(char **argv) {
     int pid;
     int status;
 
@@ -46,7 +46,7 @@ void  execute(char **argv) {
     }
 }
 
-void  main(void) {
+void main(void) {
     char line[1024];             /* the input line                 */
     char *argv[64];              /* the command line argument      */
 
