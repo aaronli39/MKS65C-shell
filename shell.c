@@ -17,7 +17,8 @@ char **parse_args(char *line) {
 }
 
 void  parse(char *line, char **argv) {
-    while (*line != '\0') {       /* if not the end of line ....... */
+    // if not end of line
+    while (*line != '\0') {       
         while (*line == ' ' || *line == '\t' || *line == '\n')
         *line++ = '\0';     /* replace white spaces with 0    */
         *argv++ = line;          /* save the argument position     */
@@ -29,34 +30,40 @@ void  parse(char *line, char **argv) {
 }
 
 void  execute(char **argv) {
-    int pid;
+    int child;
     int status;
 
-    if ((pid = fork()) < 0) {     /* fork a child process           */
-        printf("*** ERROR: forking child process failed\n");
+    if ((child = fork()) < 0) {     
+        // fork child to do work ;-;
+        printf("Error: %s\n", strerror(errno));
         exit(1);
-    }
-    else if (pid == 0) {          /* for the child process:         */
-        if (execvp(*argv, argv) < 0) {     /* execute the command  */
+    } else if (child == 0) {          
+        // child: execute command
+        if (execvp(*argv, argv) < 0) {   
             printf("%s\n", strerror(errno));
             exit(1);
         }
-    } else {                                  /* for the parent:      */
-        while (wait(&status) != pid);       /* wait for completion  */
+    } else {                                
+        // parent: wait till complete
+        while (wait(&status) != child);       
     }
 }
 
 void  main(void) {
-    char line[1024];             /* the input line                 */
-    char *argv[64];              /* the command line argument      */
+    // store input
+    char line[1024];             
+    // args
+    char *argv[64];              
 
-    while (1) {                   /* repeat until done ....         */
-        printf("Shell -> ");     /*   display a prompt             */
-        gets(line);              /*   read in the command line     */
-        printf("\n");
-        parse(line, argv);       /*   parse the line               */
-        if (strcmp(argv[0], "exit") == 0)  /* is it an "exit"?     */
-        exit(0);            /*   exit if it is                */
-        execute(argv);           /* otherwise, execute the command */
+    while (1) {               
+        // cmd line prompt    
+        printf("> ");     
+        gets(line);              
+        parse(line, argv);       
+        // if exit exit, otherwise execute
+        if (strcmp(argv[0], "exit") == 0)  
+        exit(0);          
+        execute(argv);        
+        // printf("\n");
     }
 }
