@@ -7,17 +7,16 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-// char **parse_args(char *line) {
-//     char **args = calloc(sizeof(char *), 6);
-//     int index = 0;
-//     while (line != NULL && index < 5) {
-//         args[index] = strsep(&line, " ");
-//         index++;
-//     } return args;
-// }
+char **parse_args(char *line) {
+    char **args = calloc(sizeof(char *), 6);
+    int index = 0;
+    while (line != NULL && index < 5) {
+        args[index] = strsep(&line, " ");
+        index++;
+    } return args;
+}
 
-void  parse(char *line, char **argv)
-{
+void  parse(char *line, char **argv) {
     while (*line != '\0') {       /* if not the end of line ....... */
         while (*line == ' ' || *line == '\t' || *line == '\n')
         *line++ = '\0';     /* replace white spaces with 0    */
@@ -29,9 +28,8 @@ void  parse(char *line, char **argv)
     *argv = '\0';                 /* mark the end of argument list  */
 }
 
-void  execute(char **argv)
-{
-    pid_t pid;
+void  execute(char **argv) {
+    int pid;
     int status;
 
     if ((pid = fork()) < 0) {     /* fork a child process           */
@@ -43,17 +41,14 @@ void  execute(char **argv)
             printf("%s\n", strerror(errno));
             exit(1);
         }
-    }
-    else {                                  /* for the parent:      */
-        while (wait(&status) != pid)       /* wait for completion  */
-        ;
+    } else {                                  /* for the parent:      */
+        while (wait(&status) != pid);       /* wait for completion  */
     }
 }
 
-void  main(void)
-{
-    char  line[1024];             /* the input line                 */
-    char  *argv[64];              /* the command line argument      */
+void  main(void) {
+    char line[1024];             /* the input line                 */
+    char *argv[64];              /* the command line argument      */
 
     while (1) {                   /* repeat until done ....         */
         printf("Shell -> ");     /*   display a prompt             */
