@@ -16,24 +16,27 @@ char **parse_args(char *line) {
     } return args;
 }
 
-void  parse(char *line, char **argv) {
+void parse(char *line, char **argv) {
     // if not end of line
-    while (*line != '\0') {       
-        while (*line == ' ' || *line == '\t' || *line == '\n')
-        *line++ = '\0';     /* replace white spaces with 0    */
-        *argv++ = line;          /* save the argument position     */
-        while (*line != '\0' && *line != ' ' &&
-        *line != '\t' && *line != '\n')
-        line++;             /* skip the argument until ...    */
+    while (*line != '\0') {     
+        // replace white spaces with 0    
+        while (*line == ' ')
+            *line++ = '\0';     
+        // save the argument position
+        *argv++ = line;          
+        while (*line != '\0' && *line != ' ')
+            // skip the argument until ... 
+            line++;             
     }
-    *argv = '\0';                 /* mark the end of argument list  */
+    // end of argument list 
+    *argv = '\0';                 
 }
 
-void  execute(char **argv) {
-    int child;
+void execute(char **argv) {
     int status;
+    int child = fork();
 
-    if ((child = fork()) < 0) {     
+    if (child < 0) {     
         // fork child to do work ;-;
         printf("Error: %s\n", strerror(errno));
         exit(1);
@@ -45,20 +48,20 @@ void  execute(char **argv) {
         }
     } else {                                
         // parent: wait till complete
-        while (wait(&status) != child);       
+        wait(&status);     
     }
 }
 
-void  main(void) {
+void main(void) {
     // store input
-    char line[1024];             
+    char line[500];             
     // args
-    char *argv[64];              
+    char *argv[100];              
 
     while (1) {               
         // cmd line prompt    
         printf("> ");     
-        gets(line);              
+        gets(line);
         parse(line, argv);       
         // if exit exit, otherwise execute
         if (strcmp(argv[0], "exit") == 0)  
