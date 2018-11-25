@@ -57,8 +57,11 @@ void main(void) {
     char line[500];             
     // args
     char *argv[100];              
-
+    
     while (1) {               
+        // char * pter = malloc(sizeof(size));
+        // buf = getcwd(pter, sizeof(size));
+        // printf("path: %s\n", buf);
         // cmd line prompt    
         printf("> ");     
         gets(line);
@@ -67,6 +70,6 @@ void main(void) {
         if (strcmp(argv[0], "exit") == 0)  
         exit(0);          
         execute(argv);        
-        // printf("\n");
+        printf("\n");
     }
 }
