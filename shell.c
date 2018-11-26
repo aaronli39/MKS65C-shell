@@ -94,14 +94,9 @@ void main(void) {
 //   char ** args;
 //   int status = 1;
 //   char * username = getpwuid(getuid())->pw_name;
-//   char host_name[64];
-//   gethostname(host_name,64);
 
 //   while(status){
 //     printf("%s@%s: $ ",username,host_name);
-//     input = read_input();
-//     char * cur_input = input;
-//     strsep(&input,";");
 //     while (cur_input){
 //       //printf("Your input now is cur:%s or input:%s\n",cur_input,input);
 //       args = parse_args(cur_input);
