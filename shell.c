@@ -8,13 +8,13 @@
 #include <fcntl.h>
 #include <pwd.h>
 
-char **parse_args(char *line) {
-    char **args = calloc(sizeof(char *), 6);
-    int index = 0;
-    while (line != NULL && index < 5) {
-        args[index] = strsep(&line, " ");
-        index++;
-    } return args;
+void parse_args(char *line, char **argv) {
+    char **args = calloc(sizeof(char *), 10);
+    char *token;
+    printf("ORIGINAL STRING:\n%s\n", line);
+    while ((token = strsep(&line, ";")) != NULL) {
+        printf("parsed: %s\n", token);
+    }
 }
 
 void parse(char *line, char **argv) {
@@ -53,58 +53,79 @@ void execute(char **argv) {
     }
 }
 
-void getPath() {
-    char *ret = calloc(sizeof(char *), 100);
-    char path[FILENAME_MAX];
-    getcwd(path, FILENAME_MAX);
-    char temp[1000];
-    strcpy(temp, path);
-    printf("\n%d\n", temp[5]);
-    int index = 0;
+void getDir(char out[]){
+    char path[1024] = "";
+    if (getcwd(path, 1024) == NULL){
+        printf("Can't get directory\n");
+        exit(1);
+    } char *home = getenv("HOME");
+
+    // if cwd is subdir of home
+    if (strstr(path,home)){
+        strcpy(out,"~");
+        strcat(out,path+strlen(home));
+    }
+    // if cwd not in home
+    else{
+        strcpy(out,path);
+    }
 }
 
-void main(void) {
+// int main() {
+//     // store input
+//     char line[500];             
+//     // args
+//     char *argv[100];              
+//     char host_name[64];
+//     gethostname(host_name,64);
+//     char path[FILENAME_MAX];
+//     getcwd(path, FILENAME_MAX);
+//     while (1) {               
+//         // char * pter = malloc(sizeof(size));
+//         // buf = getcwd(pter, sizeof(size));
+//         // printf("path: %s\n", buf);
+//         // cmd line prompt    
+//         printf("[%s]%s$ ",host_name, path);
+//         // getPath();
+//         gets(line);
+//         parse(line, argv);       
+//         // if exit exit, otherwise execute
+//         if (strcmp(argv[0], "exit") == 0)  
+//         exit(0);          
+//         execute(argv);        
+//         printf("\n");
+//     }
+// }
+
+int main() {
     // store input
     char line[500];             
-    // args
+    char *current;
+    
     char *argv[100];              
     char host_name[64];
     gethostname(host_name,64);
-    char path[FILENAME_MAX];
-    getcwd(path, FILENAME_MAX);
+    char cwd[1024];
+    getDir(cwd);
     while (1) {               
         // char * pter = malloc(sizeof(size));
         // buf = getcwd(pter, sizeof(size));
         // printf("path: %s\n", buf);
         // cmd line prompt    
-        printf("[%s]%s$ ",host_name, path);
-        getPath();
+        printf("[%s]%s$ ",host_name, cwd);
         gets(line);
+
+        // run first part of semicolons
+        char *args = line;
+        current = strsep(&args, ";");
+        printf("temp: %s\n", current);
+        current = strsep(&args, ";");
+        printf("next one: %s\n", current);
         parse(line, argv);       
         // if exit exit, otherwise execute
         if (strcmp(argv[0], "exit") == 0)  
-        exit(0);          
+            exit(0);          
         execute(argv);        
         printf("\n");
-    }
+    } return 0;
 }
-
-// int main(){
-//   char * input;
-//   char ** args;
-//   int status = 1;
-//   char * username = getpwuid(getuid())->pw_name;
-
-//   while(status){
-//     printf("%s@%s: $ ",username,host_name);
-//     while (cur_input){
-//       //printf("Your input now is cur:%s or input:%s\n",cur_input,input);
-//       args = parse_args(cur_input);
-//       //print_list(args);
-//       status = execute_args(args);
-//       cur_input = input;
-//       strsep(&input,";");
-//     }
-//   }
-//   return 0;
-// }
