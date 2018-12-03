@@ -8,9 +8,11 @@
 #include <fcntl.h>
 #include <pwd.h>
 
+#include "shell.h"
+// parse args v2
 void parse_args(char *line, char **argv) {
     //Remove whitespace in front of input
-    while (*line == ' ' || *line == '\t'){
+    while (*line == ' ' || *line == '\t') {
         line++;
     }
     char *prev = NULL;
@@ -19,37 +21,14 @@ void parse_args(char *line, char **argv) {
     while (line) {
         prev = line;
         strsep(&line, " ");
-        int num_special = 0;
-        //Checks for special characters and adds them into the string array
-        // num_special += sep_special(old,&output,">>",&arg_index);
-        // num_special += sep_special(old,&output,">",&arg_index);
-        // num_special += sep_special(old,&output,"<",&arg_index);
-        // num_special += sep_special(old,&output,"|",&arg_index);
-        //If there was not anything special about the current arg, then just add it
-        if (num_special < 1 && *prev){
+        if (*prev) {
             argv[index] = prev;
             index++;
         }
     } argv[index] = NULL; // add ending null
 }
 
-void parse(char *line, char **argv) {
-    // if not end of line
-    while (*line != '\0') {
-        // replace white spaces with 0
-        while (*line == ' ' || *line == '\t')
-        *line++ = '\0';
-        // save the argument position
-        *argv++ = line;
-        while (*line != '\0' && *line != ' ')
-        // skip the argument until ...
-        line++;
-    }
-    // end of argument list
-    *argv = '\0';
-}
-
-void execute(char **argv) {
+int execute(char **argv) {
     int status;
     int child = fork();
 
@@ -61,12 +40,120 @@ void execute(char **argv) {
         // child: execute command
         if (execvp(*argv, argv) < 0) {
             // printf("%s\n", strerror(errno));
-            exit(1);
+            return 0;
         }
     } else {
         // parent: wait till complete
         wait(&status);
+    } return 1;
+}
+
+int executeSpecial(char *first, char *second, char *special) {
+    char *argv[100];
+    // stdout
+    if (strcmp(special, ">") == 0) {
+        int fd = open(second, O_WRONLY | O_TRUNC | O_CREAT, 0666);
+        if (fd == -1) {
+            printf("%s\n", strerror(errno));
+            return 0;
+        }
+        int copy = dup(1);
+        dup2(fd,1);
+        parse_args(first, argv);
+        int status = execute(argv);
+        dup2(copy,1);
+        close(fd);
+        return status;
     }
+    // put contents in stdin
+    else if (strcmp(special, "<") == 0) {
+        int fd = open(second, O_RDONLY);
+        if (fd == -1) {
+            printf("%s\n", strerror(errno));
+            return 0;
+        }
+        int copy = dup(0);
+        dup2(fd,0);
+        parse_args(first, argv);
+        int status = execute(argv);
+        dup2(copy,0);
+        close(fd);
+        return status;
+    }
+    // piping
+    else if (strcmp(special, "|") == 0){
+        int fds[2];
+        pipe(fds);
+
+        parse_args(first, argv);
+        char **args0 = argv;
+        parse_args(second, argv);
+        char **args1 = argv;
+
+        pid_t f = fork();
+
+        if (f < 0){
+            printf("%s\n", strerror(errno));
+        }
+        if (f == 0){
+            close(fds[0]);
+            dup2(fds[1], STDOUT_FILENO);
+            int error = execute(args0);
+            if (error == -1)
+            printf("%s\n", strerror(errno));
+        }
+        else{
+            int cpid = wait(NULL);
+            close(fds[1]);
+            dup2(fds[0], STDIN_FILENO);
+            int error = execute(args1);
+            if (error == -1)
+            printf("%s\n", strerror(errno));
+        }
+    }
+    return 0;
+}
+
+// parse args v3 (special characters)
+void parse_special(char *line, char **argv) {
+    char *special;
+    char *first;
+    char *second;
+    char *temp = line;
+    //Remove whitespace in front of input
+    while (*line == ' ' || *line == '\t') {
+        line++;
+    } while (*line != '\0') {
+        if (*line == '<')
+        special = "<";
+        if (*line == '>')
+        special = ">";
+        if (*line == '|')
+        special = "|";
+
+        line++;
+    }
+    // printf("special char: %s\n", special);
+
+    char *found;
+    // printf("Original string: '%s'\n", temp);
+    first = strsep(&temp, special);
+    // printf("first: %s\n", first);
+    second = strsep(&temp, special);
+    // printf("second: %s\n", second);
+
+    int status = executeSpecial(first, second, special);
+
+    // printf("\nend\n");
+}
+
+// return 0 if special, 1 if not
+int hasSpecial(char *current) {
+    while (*current != '\0') {
+        if (*current == '<' || *current == '>' || *current == '|') {
+            return 0;
+        } current++;
+    } return 1;
 }
 
 void getDir(char out[]) {
@@ -87,7 +174,8 @@ void getDir(char out[]) {
     }
 }
 
-int main() {
+void doEverything() {
+    int status;
     char line[500]; // input line
     char *current; // current command to execute
     char *argv[100]; // stores arguments
@@ -103,14 +191,26 @@ int main() {
         // cmd line prompt
         printf("[%s]%s$ ",host_name, cwd);
         gets(line);
-
         // run first part of semicolons
         char *args = line;
-        while ((current = strsep(&args, ";")) != NULL && strcmp(current, "") != 0) {
-            // printf("-------executing:%s---------\n", current);
-            parse_args(current, argv);
-            printf("xd: %d\n", ' ');
-            // if cd
+        while ((current = strsep(&args, ";")) != NULL && strcmp(current, "") != 0 && strcmp(current, " ")) {
+            // printf("---------------another one-------------------\n\n");
+            printf("cmd: %s\n", current);
+            if (hasSpecial(current)) {
+                // printf("not special\n");
+                parse_args(current, argv);
+                status = 1;
+            } else {
+                parse_special(current, argv);
+                break;
+            }
+            // char *string, *found;
+            // string = strdup("hello.txt<temp.txt");
+            // printf("Original string: '%s'\n", string);
+            // while((found = strsep(&string,"<")) != NULL )
+            // printf("%s\n",found);
+
+            // ----- IF CD ----- //
             if (strcmp(argv[0], "cd") == 0) {
                 // no args(home dir)
                 if (argv[1] == NULL || strcmp(argv[1], "~") == 0){
@@ -135,9 +235,22 @@ int main() {
             // printf("<%s>\n", temp);
             // printf("argv: %s\n", *argv);
             // if exit exit, otherwise execute
+
+            // ----- IF EXIT ----- //
+            // printf("%s\n", argv[0]);
             if (strcmp(argv[0], "exit") == 0 || current == NULL) {
                 exit(0);
-            } execute(argv);
+            }
+
+            // printf("-------executing:%s---------\n", current);
+            // printf("special?: %d\n", hasSpecial(current));
+            if (status) {
+                execute(argv);
+            }
         }
-    } return 0;
+    }
+}
+int main() {
+    doEverything();
+    return 0;
 }
