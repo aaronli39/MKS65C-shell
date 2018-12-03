@@ -16,6 +16,7 @@
 * piping will only work if there is no space after the "|": eg: ```ls |wc``` will work but ```ls | wc``` will not.
 * due to file naming and spaces in file names, and the way I parsed them, doing ```ls > temp.txt``` will put the correct ls information but into a file called ```' temp.txt'``` instead of ```temp.txt```
 * you can't use redirections in the same line
+* for some reason pipes dont work on Stuy computers. Eg: ```ls |wc``` will not work(the program seems to be stuck in a loop)
 
 ## Functions:
 ```c
