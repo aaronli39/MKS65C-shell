@@ -189,15 +189,22 @@ void doEverything() {
         // buf = getcwd(pter, sizeof(size));
         // printf("path: %s\n", buf);
         // cmd line prompt
-        printf("[%s]%s$ ",host_name, cwd);
+        if (isatty(STDIN_FILENO)) {
+            printf("[%s]%s$ ",host_name, cwd);
+        }
         gets(line);
+        if (strcmp(line, "exit") == 0) {
+            exit(0);
+        }
+
         // run first part of semicolons
         char *args = line;
         while ((current = strsep(&args, ";")) != NULL && strcmp(current, "") != 0 && strcmp(current, " ")) {
             // printf("---------------another one-------------------\n\n");
-            printf("cmd: %s\n", current);
+            // printf("cmd: %s\n", current);
             if (hasSpecial(current)) {
                 // printf("not special\n");
+                // printf("\n");
                 parse_args(current, argv);
                 status = 1;
             } else {
@@ -238,9 +245,9 @@ void doEverything() {
 
             // ----- IF EXIT ----- //
             // printf("%s\n", argv[0]);
-            if (strcmp(argv[0], "exit") == 0 || current == NULL) {
-                exit(0);
-            }
+            // if (strcmp(argv[0], "exit") == 0 || current == NULL) {
+            //     exit(0);
+            // }
 
             // printf("-------executing:%s---------\n", current);
             // printf("special?: %d\n", hasSpecial(current));
