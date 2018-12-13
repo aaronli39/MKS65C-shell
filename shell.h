@@ -1,5 +1,3 @@
-void print_prompt();
-
 char **parse_args(char *, char *);
 
 void runAll(char *);

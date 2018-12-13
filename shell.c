@@ -364,18 +364,6 @@ char cdExit(char *arg_line)
     return 0;
 }
 
-// simply prints my prompt
-void print_prompt()
-{
-    if (isatty(STDIN_FILENO))
-    {
-        char host_name[64]; // hostname
-        gethostname(host_name, 64);
-        getDir(cwd);
-        printf("[%s]%s$ ", host_name, cwd);
-    }
-}
-
 // run everything
 int main()
 {
