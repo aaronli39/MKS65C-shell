@@ -1,13 +1,21 @@
-void parse_args(char *, char **);
+void print_prompt();
 
-int execute(char **);
+char **parse_args(char *, char *);
 
-int executeSpecial(char *, char *, char *);
+void runAll(char *);
 
-void parse_special(char *, char **);
+char cdExit(char *);
 
-int hasSpecial(char *);
+char *get_args();
 
-void getDir();
+char inputExec(char *);
 
-void doEverything();
+void regularExec(char *);
+
+char pipeExec(char *);
+
+char outputExec(char *);
+
+char *trim(char *);
+
+void runSingle(char *);
