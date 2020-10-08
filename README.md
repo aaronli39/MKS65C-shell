@@ -1,4 +1,4 @@
-# MKS65C-shell: Xiaojie(Aaron) Li
+# Shell project: Xiaojie Li
 
 ## Implemented Features:
 * shows user id and cwd in the prompt
